@@ -12,6 +12,7 @@ import time
 import json
 from math import *
 import sys
+from pybtc import *
 
 
 class AddressState():
@@ -106,7 +107,7 @@ class AddressState():
         height = -1
         previous_height = -1
         last_block_height = -1
-        limit = 200
+        limit = 400
         next_batch = None
         address_cache = self.address_cache
         affected_new = self.affected_new
@@ -158,18 +159,25 @@ class AddressState():
                             height = last_block_height
 
                     if height + limit > max_h:
-                        limit = max_h - height - 1
+                        # tail of last last 10 blocks handle one be one
+                        limit = max_h - height - 1 - 10
+                        if limit < 0: limit = 0
 
                 if next_batch is None:
                     stxo, utxo, ustxo, height, recent_limit = await self.get_records(height, limit)
                 else:
                     await next_batch
                     stxo, utxo, ustxo, height, recent_limit = next_batch.result()
+                print("height",height)
+                print("last_block_height",last_block_height)
+
                 last_block_height = height + 1 + recent_limit
                 first_block_height = height + 1
 
                 if last_block_height + limit > max_h:
-                    limit = last_block_height - height - 1
+                    #tail of last 10 blocks handle one be one
+                    limit = last_block_height - height - 1 - 10
+                    if limit < 0: limit = 0
                 if last_block_height > max_h:
                     last_block_height = max_h
                 next_batch = self.loop.create_task(self.get_records(last_block_height, limit))
@@ -181,9 +189,9 @@ class AddressState():
                     try:
                         await commit
                     except:
-                        pass
+                        raise
                     next_batch = None
-                    limit = 1
+                    limit = 0
                     async with self.db_pool.acquire() as conn:
                         i = await conn.fetchval("select count(*)  from pg_indexes"
                                                 " where  indexname = 'address_rich_list'")
@@ -215,7 +223,6 @@ class AddressState():
                 l_records = len(stxo) + len(utxo) + len(ustxo)
                 if l_records > address_cache.get_size():
                     address_cache.set_size(l_records)
-
                 len_missed_address = len(missed_addresses)
 
                 await self.load_addresses()
@@ -397,6 +404,24 @@ class AddressState():
                                             blockchain_stat["inputs"] += inputs_new
                                             blockchain_stat["reused"] += inputs_reused
 
+                                            # for address in after_block_balance:
+                                            #     if after_block_balance[address]<0:
+                                            #         print("address",address)
+                                            #         if address[0] in (0, 1, 5, 6, 9):
+                                            #             script_hash = True if address[0] in (1, 6) else False
+                                            #             witness_version = None if address[0] < 5 else 0
+                                            #             if address[0] == 9:
+                                            #                 witness_version = 1
+                                            #             address_hash = hash_to_address(address[1:],
+                                            #                                                       testnet=True,
+                                            #                                                       script_hash=script_hash,
+                                            #                                                       witness_version=witness_version)
+                                            #             print("address_hash",address_hash)
+                                            #         elif address[0] == 2:
+                                            #             address_hash = script_to_address(address[1:],
+                                            #                                                         testnet=True)
+                                            #             print("address_hash",address_hash)
+                                            #
                                             for amount in after_block_balance.values():
                                                 if amount < 0:
                                                     print(amount)
@@ -534,7 +559,7 @@ class AddressState():
                 qs = round(time.time() - qs, 2)
 
                 qt = round(time.time() - qt, 2)
-                self.log.debug(
+                self.log.info(
                     "Address state processor round %s; Get records %s; Load addresses %s; Computation %s; Save %s" % (
                     qt, ql, qg, qc, qs))
                 self.log.info("Address state/analytica +%s blocks; last block %s;" % (last_block_height -
