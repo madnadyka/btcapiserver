@@ -168,8 +168,6 @@ class AddressState():
                 else:
                     await next_batch
                     stxo, utxo, ustxo, height, recent_limit = next_batch.result()
-                print("height",height)
-                print("last_block_height",last_block_height)
 
                 last_block_height = height + 1 + recent_limit
                 first_block_height = height + 1
@@ -189,7 +187,7 @@ class AddressState():
                     try:
                         await commit
                     except:
-                        raise
+                        pass
                     next_batch = None
                     limit = 0
                     async with self.db_pool.acquire() as conn:
