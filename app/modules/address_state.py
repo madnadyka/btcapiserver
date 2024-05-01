@@ -121,7 +121,6 @@ class AddressState():
 
         while True:
             try:
-                print("initial limit", limit)
                 qt = time.time()
 
                 ql = time.time()
@@ -160,15 +159,17 @@ class AddressState():
                         else:
                             height = last_block_height
 
-                    if height + limit > max_h:
-                        limit = max_h - height - 1 - 10
-                        print("limit1", limit)
                     # tail of last 10 blocks handle one be one
+                    if height + limit >= max_h - 10:
+                        limit = max_h - height - 1 - 10
                     if limit < 10: limit = 0
 
                 if next_batch is None:
-                    print("limit next_batch is none", limit)
-                    stxo, utxo, ustxo, height, recent_limit = await self.get_records(height, limit)
+                    if height >= max_h:
+                        stxo, utxo, ustxo, height, recent_limit = None, None, None, height, limit
+                    else:
+                        print("limit for this batch", limit)
+                        stxo, utxo, ustxo, height, recent_limit = await self.get_records(height, limit)
                 else:
                     await next_batch
                     stxo, utxo, ustxo, height, recent_limit = next_batch.result()
@@ -176,15 +177,16 @@ class AddressState():
                 last_block_height = height + 1 + recent_limit
                 first_block_height = height + 1
 
-                if last_block_height + limit > max_h:
-                    limit = max_h - last_block_height - 1 - 10
-                    print("limit2", limit)
                 # tail of last 10 blocks handle one be one
+                if last_block_height + limit >= max_h - 10:
+                    limit = max_h - last_block_height - 1 - 10
                 if limit < 10: limit = 0
-                if last_block_height > max_h:
+
+                if last_block_height >= max_h:
                     last_block_height = max_h
-                print("limit for next batch", limit)
-                next_batch = self.loop.create_task(self.get_records(last_block_height, limit)) #1100, 20
+                else:
+                     print("limit for next batch", limit)
+                     next_batch = self.loop.create_task(self.get_records(last_block_height, limit))
 
                 ql = round(time.time() - ql, 2)
 
