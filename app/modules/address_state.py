@@ -138,6 +138,7 @@ class AddressState():
                         v = await conn.fetchval("SELECT value FROM service WHERE name = 'bootstrap_completed' LIMIT 1;")
                         if v == '1':
                             self.bootstrap_completed = True
+
                         else:
                             await asyncio.sleep(10)
                             continue
@@ -159,9 +160,9 @@ class AddressState():
                             height = last_block_height
 
                     if height + limit > max_h:
-                        # tail of last last 10 blocks handle one be one
                         limit = max_h - height - 1 - 10
-                        if limit < 0: limit = 0
+                    # tail of last 10 blocks handle one be one
+                    if limit < 10: limit = 0
 
                 if next_batch is None:
                     stxo, utxo, ustxo, height, recent_limit = await self.get_records(height, limit)
@@ -173,9 +174,9 @@ class AddressState():
                 first_block_height = height + 1
 
                 if last_block_height + limit > max_h:
-                    #tail of last 10 blocks handle one be one
                     limit = last_block_height - height - 1 - 10
-                    if limit < 0: limit = 0
+                # tail of last 10 blocks handle one be one
+                if limit < 10: limit = 0
                 if last_block_height > max_h:
                     last_block_height = max_h
                 next_batch = self.loop.create_task(self.get_records(last_block_height, limit))
