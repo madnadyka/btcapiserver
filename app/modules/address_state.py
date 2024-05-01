@@ -68,6 +68,7 @@ class AddressState():
         return rows
 
     async def get_records(self, height, limit):
+        print("get_records from height %s to height %s" %((height + 1),(height + 1 + limit + 1)))
         q = time.time()
         stxo_t = self.loop.create_task(self.fetch_records("SELECT address, s_pointer as p, amount as a FROM "
                                                           "stxo WHERE s_pointer >= $1 and s_pointer < $2 "
@@ -120,7 +121,7 @@ class AddressState():
 
         while True:
             try:
-
+                print("initial limit", limit)
                 qt = time.time()
 
                 ql = time.time()
@@ -161,10 +162,12 @@ class AddressState():
 
                     if height + limit > max_h:
                         limit = max_h - height - 1 - 10
+                        print("limit1", limit)
                     # tail of last 10 blocks handle one be one
                     if limit < 10: limit = 0
 
                 if next_batch is None:
+                    print("limit next_batch is none", limit)
                     stxo, utxo, ustxo, height, recent_limit = await self.get_records(height, limit)
                 else:
                     await next_batch
@@ -174,12 +177,14 @@ class AddressState():
                 first_block_height = height + 1
 
                 if last_block_height + limit > max_h:
-                    limit = last_block_height - height - 1 - 10
+                    limit = max_h - last_block_height - 1 - 10
+                    print("limit2", limit)
                 # tail of last 10 blocks handle one be one
                 if limit < 10: limit = 0
                 if last_block_height > max_h:
                     last_block_height = max_h
-                next_batch = self.loop.create_task(self.get_records(last_block_height, limit))
+                print("limit for next batch", limit)
+                next_batch = self.loop.create_task(self.get_records(last_block_height, limit)) #1100, 20
 
                 ql = round(time.time() - ql, 2)
 
