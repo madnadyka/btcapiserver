@@ -180,12 +180,11 @@ class AddressState():
                 # tail of last 10 blocks handle one be one
                 if last_block_height + limit >= max_h - 10:
                     limit = max_h - last_block_height - 1 - 10
-                if limit < 10: limit = 0
 
-                if last_block_height >= max_h:
+                if last_block_height > max_h:
                     last_block_height = max_h
-                else:
-                     print("limit for next batch", limit)
+
+                if limit >= 10:
                      next_batch = self.loop.create_task(self.get_records(last_block_height, limit))
 
                 ql = round(time.time() - ql, 2)
