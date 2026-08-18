@@ -1457,7 +1457,8 @@ if __name__ == '__main__':
 
     logger.setLevel(log_level)
     logger_connector.setLevel(connector_log_level)
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     app = App(loop, logger, logger_connector, config)
     loop.run_forever()
 

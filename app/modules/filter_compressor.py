@@ -31,7 +31,8 @@ class FilterCompressor():
         self.last_pointer = 0
 
         self.compressor_task = None
-        self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
         signal.signal(signal.SIGTERM, self.terminate)
         self.loop.create_task(self.start())
         self.loop.run_forever()
