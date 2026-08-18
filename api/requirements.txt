@@ -6,7 +6,7 @@ asyncpg==0.21.0
 setproctitle
 colorlog==3.1.4
 python-json-logger==0.1.9
-git+https://github.com/bitaps-com/pybtc
+git+https://github.com/bitaps-com/pybtc@debug-4
 git+https://github.com/bitaps-com/aiojsonrpc
 pyzmq
 
