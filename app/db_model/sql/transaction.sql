@@ -36,12 +36,12 @@ CREATE TABLE IF NOT EXISTS  invalid_stxo (outpoint BYTEA,
 CREATE INDEX IF NOT EXISTS unconfirmed_transaction_time ON unconfirmed_transaction USING BTREE (timestamp);
 CREATE INDEX IF NOT EXISTS unconfirmed_transaction_id ON unconfirmed_transaction USING BTREE (id);
 
-CREATE INDEX IF NOT EXISTS invalid_utxo_out_tx_id ON invalid_utxo USING BTREE (out_tx_id);
-CREATE INDEX IF NOT EXISTS invalid_utxo_address ON invalid_utxo USING BTREE (address);
+CREATE INDEX IF NOT EXISTS invalid_utxo_out_tx_id ON invalid_utxo USING HASH (out_tx_id);
+CREATE INDEX IF NOT EXISTS invalid_utxo_address ON invalid_utxo USING HASH (address);
 
-CREATE INDEX IF NOT EXISTS invalid_stxo_out_tx_id ON invalid_stxo USING BTREE (out_tx_id);
-CREATE INDEX IF NOT EXISTS invalid_stxo_address ON invalid_stxo USING BTREE (address);
-CREATE INDEX IF NOT EXISTS invalid_stxo_tx_id ON invalid_stxo USING BTREE (tx_id);
+CREATE INDEX IF NOT EXISTS invalid_stxo_out_tx_id ON invalid_stxo USING HASH (out_tx_id);
+CREATE INDEX IF NOT EXISTS invalid_stxo_address ON invalid_stxo USING HASH (address);
+CREATE INDEX IF NOT EXISTS invalid_stxo_tx_id ON invalid_stxo USING HASH (tx_id);
 CREATE INDEX IF NOT EXISTS invalid_transaction_timestamp ON invalid_transaction USING BTREE (invalidation_timestamp);
 
 CREATE OR REPLACE FUNCTION set_invalidation_timestamp()

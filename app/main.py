@@ -1308,7 +1308,7 @@ class App:
         if self.transaction:
             async with self.db_pool.acquire() as conn:
                 await conn.execute("CREATE INDEX IF NOT EXISTS transactions_map_tx_id "
-                                   "ON transaction USING BTREE (tx_id);")
+                                   "ON transaction USING HASH (tx_id);")
 
     async def create_tx_history_index(self):
         if self.transaction_history:
@@ -1316,26 +1316,26 @@ class App:
                 await conn.execute("CREATE INDEX IF NOT EXISTS stxo_s_pointer "
                                    "ON stxo USING BTREE (s_pointer);")
                 await conn.execute("CREATE INDEX IF NOT EXISTS stxo_s_address "
-                                   "ON stxo USING BTREE (address, s_pointer);")
+                                   "ON stxo USING HASH (address);")
 
                 await conn.execute("CREATE INDEX IF NOT EXISTS transaction_map_address "
-                                   "ON transaction_map USING BTREE (address, pointer);")
+                                   "ON transaction_map USING HASH (address);")
                 await conn.execute("CREATE INDEX IF NOT EXISTS transaction_map_pointer "
                                    "ON transaction_map USING BTREE (pointer);")
 
     async def create_address_utxo_index(self):
         async with self.db_pool.acquire() as conn:
             await conn.execute("CREATE INDEX IF NOT EXISTS address_map_utxo "
-                               "ON connector_utxo USING BTREE (address, pointer);")
+                               "ON connector_utxo USING HASH (address);")
             await conn.execute("CREATE INDEX IF NOT EXISTS address_map_utxo_pointer "
                                "ON connector_utxo USING BTREE (pointer);")
             await conn.execute("CREATE INDEX IF NOT EXISTS address_map_uutxo "
-                               "ON connector_unconfirmed_utxo USING BTREE (address);")
+                               "ON connector_unconfirmed_utxo USING HASH (address);")
 
     async def create_blocks_hash_index(self):
         async with self.db_pool.acquire() as conn:
             await conn.execute("CREATE INDEX IF NOT EXISTS blocks_hash "
-                               "ON blocks USING BTREE (hash);")
+                               "ON blocks USING HASH (hash);")
 
 
     def _exc(self, a, b, c):
